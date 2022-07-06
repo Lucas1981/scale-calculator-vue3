@@ -1,16 +1,16 @@
 export const keyIndex = [
-  ['C', 'B#', 'Dbb'],
-  ['Db', 'C#', 'B##'],
-  ['D', 'C##', 'Ebb'],
-  ['Eb', 'D#', 'Fbb'],
-  ['E', 'Fb', 'D##'],
-  ['F', 'E#', 'Gbb'],
-  ['Gb', 'F#', 'E##'],
-  ['G', 'F##', 'Abb'],
-  ['G#', 'Ab'],
-  ['A', 'G##', 'Bbb'],
-  ['A#', 'Bb', 'Cbb'],
-  ['B', 'A##', 'Cb']
+  ['C', 'B#', 'Dbb', 'A###'],
+  ['Db', 'C#', 'Ebbb', 'B##'],
+  ['D', 'C##', 'Ebb', 'B###', 'Fbbb'],
+  ['Eb', 'D#', 'Fbb', 'C###'],
+  ['E', 'D##', 'Fb', 'Gbbb'],
+  ['F', 'E#', 'Gbb', 'D###'],
+  ['Gb', 'F#', 'Abbb', 'E##'],
+  ['G', 'F##', 'Abb', 'E###'],
+  ['Ab', 'G#', 'Bbbb', 'F###'],
+  ['A', 'G##', 'Bbb', 'Cbbb'],
+  ['Bb', 'A#', 'Cbb', 'G###'],
+  ['B', 'A##', 'Cb', 'Dbbb']
 ];
 
 export const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];

@@ -23,7 +23,6 @@ const stagedChord = ref([])
 const props = defineProps<{
   scale: Array<string>,
   chord: any,
-  mode: number
 }>()
 </script>
 
@@ -33,7 +32,6 @@ const props = defineProps<{
       <piano
         v-if="instrument === instruments.piano"
         :scale="scale"
-        :mode="mode"
         :chord="chord"
         :note-display-option="noteDisplayOption"
         :ring-display-option="ringDisplayOption"
@@ -41,7 +39,6 @@ const props = defineProps<{
       <guitar
         v-if="instrument === instruments.guitar"
         :scale="scale"
-        :mode="mode"
         :chord="chord"
         :note-display-option="noteDisplayOption"
         :ring-display-option="ringDisplayOption"

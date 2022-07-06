@@ -27,7 +27,6 @@ const tuning = [4, 11, 7, 2, 9, 4];
 const props = defineProps<{
   scale: Array<string>,
   chord: Array<string>,
-  mode: number,
   noteDisplayOption: noteDisplayOptions,
   ringDisplayOption: ringDisplayOptions
 }>()
@@ -44,14 +43,14 @@ const canvas = ref<any>(null);
 
 const drawText = generateDrawTextFn(textOffset, textOffset, stepWidth, stepHeight);
 const getPosition = (notes, collection) => collection.findIndex(note => notes.includes(note))
-const draw = (ctx, collection, primaryImage, secondaryImage, type, mode = 0) => {
+const draw = (ctx, collection, primaryImage, secondaryImage, type) => {
   for(let j = 0; j < strings; j++) {
     const offset = tuning[j];
     for(let i = 0; i <= fretsPerLine; i++) {
       const notes = keyIndex[(i + offset) % keyIndex.length];
       if (collection.some(note => notes.includes(note))) {
         ctx.drawImage(
-          getPosition(notes, collection) === mode ? primaryImage : secondaryImage,
+          getPosition(notes, collection) === 0 ? primaryImage : secondaryImage,
           i * stepWidth,
           j * stepHeight
         );
@@ -60,7 +59,7 @@ const draw = (ctx, collection, primaryImage, secondaryImage, type, mode = 0) => 
 
         if (type === collectionTypes.scale && props.noteDisplayOption !== noteDisplayOptions.none) {
           const name = props.noteDisplayOption === noteDisplayOptions.notes ?
-            collection[index] : romanNumerals[Math.abs(index - mode) % collection.length];
+            collection[index] : romanNumerals[index];
           drawText(ctx, name, i, j)
         }
 
@@ -79,7 +78,7 @@ const draw = (ctx, collection, primaryImage, secondaryImage, type, mode = 0) => 
   }
 }
 
-const drawScale = ctx => draw(ctx, props.scale, redDot, blueDot, collectionTypes.scale, props.mode)
+const drawScale = ctx => draw(ctx, props.scale, redDot, blueDot, collectionTypes.scale)
 const drawChord = ctx => draw(ctx, props.chord, orangeHoop, yellowHoop, collectionTypes.chord)
 const drawGuitar = ctx => ctx.drawImage(guitarImage, 0, 0);
 

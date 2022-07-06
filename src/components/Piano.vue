@@ -31,7 +31,6 @@ const textOffsetY = 66;
 const props = defineProps<{
   scale: Array<string>,
   chord: Array<string>,
-  mode: number,
   noteDisplayOption: noteDisplayOptions,
   ringDisplayOption: ringDisplayOptions
 }>()
@@ -43,12 +42,12 @@ let isBeingDestroyed = false;
 // Methods
 
 const drawText = generateDrawTextFn(textOffsetX, textOffsetY, stepWidth, stepHeight);
-const draw = (ctx, collection, primaryImage, secondaryImage, type, mode = 0) => {
+const draw = (ctx, collection, primaryImage, secondaryImage, type) => {
   for (let i = 0; i < 2; i++) {
     for (let j = 0; j < collection.length; j++) {
       const pianoIndex = keyIndex.findIndex(arr => arr.includes(collection[j]));
       ctx.drawImage(
-        j === mode ? primaryImage : secondaryImage,
+        j === 0 ? primaryImage : secondaryImage,
         xOffset + (pianoJumps[pianoIndex + (i * 12)] * 27),
         yOffset + (pianoKeys[pianoIndex] * 100)
       );
@@ -56,7 +55,7 @@ const draw = (ctx, collection, primaryImage, secondaryImage, type, mode = 0) => 
       if(type === collectionTypes.scale && props.noteDisplayOption !== noteDisplayOptions.none) {
         // const index = collection.findIndex(note => notes.includes(note))
         const name = props.noteDisplayOption === noteDisplayOptions.notes ?
-          collection[j] : romanNumerals[Math.abs(j - mode) % collection.length];
+          collection[j] : romanNumerals[j];
         drawText(
           ctx,
           name,
@@ -79,9 +78,17 @@ const draw = (ctx, collection, primaryImage, secondaryImage, type, mode = 0) => 
   }
 }
 
-const drawScale = ctx => draw(ctx, props.scale, redDot, blueDot, collectionTypes.scale, props.mode);
+const drawScale = ctx => draw(ctx, props.scale, redDot, blueDot, collectionTypes.scale);
 const drawChord = ctx => draw(ctx, props.chord, orangeHoop, yellowHoop, collectionTypes.chord)
 const drawPiano = ctx => ctx.drawImage(pianoImage, 0, 0);
+
+// Initiation
+
+yellowHoop.src = yellowHoopPng;
+orangeHoop.src = orangeHoopPng;
+blueDot.src = blueDotPng;
+redDot.src = redDotPng;
+pianoImage.src = pianoImagePng;
 
 // Hooks
 
@@ -99,14 +106,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => isBeingDestroyed = true)
-
-// Initiation
-
-yellowHoop.src = yellowHoopPng;
-orangeHoop.src = orangeHoopPng;
-blueDot.src = blueDotPng;
-redDot.src = redDotPng;
-pianoImage.src = pianoImagePng;
 </script>
 
 <template>

@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { modes, scaleIntervalsMap } from '@/components/consts';
 import scalesAndChords from '@/assets/scales-and-chords.json'
-import Instrument from '@/components/instrument.vue';
+import Instrument from '@/components/Instrument.vue';
 import ChordTable from '@/components/ChordTable.vue'
 import { playNotes } from '@/components/play-note.js';
 
@@ -20,20 +20,25 @@ const stagedChord = ref([])
 
 // Computed
 
+const computedMode = computed(() => {
+  const foundKey = Object.entries(scalesAndChords)
+    .find(([localKey, value]) =>
+      value[scale.value].scale[mode.value] === key.value
+    )[0]
+
+  return scalesAndChords[foundKey][scale.value];
+});
+
 const computedScale = computed(() => {
-  const rawScale = scalesAndChords[key.value][scale.value].scale;
+  const raw = computedMode.value.scale;
+
   return [
-    ...rawScale.slice(mode.value),
-    ...rawScale.slice(0, mode.value)
-  ]
+    ...raw.slice(mode.value),
+    ...raw.slice(0, mode.value)
+  ];
 })
-const computedChords = computed(() => {
-  const rawChords = scalesAndChords[key.value][scale.value].chords;
-  return [
-    ...rawChords.slice(mode.value),
-    ...rawChords.slice(0, mode.value)
-  ]
-})
+
+const computedChords = computed(() => computedMode.value.chords);
 </script>
 
 <template>
@@ -61,8 +66,7 @@ const computedChords = computed(() => {
     </div>
 
     <instrument
-      :scale="scalesAndChords[key][scale].scale"
-      :mode="mode"
+      :scale="computedScale"
       :chord="stagedChord"
     />
 
@@ -78,8 +82,8 @@ const computedChords = computed(() => {
     </p>
 
     <chord-table
-      :scale="scalesAndChords[key][scale].scale"
-      :chords="scalesAndChords[key][scale].chords"
+      :scale="computedScale"
+      :chords="computedChords"
       :mode="mode"
       @stage-chord="stagedChord = $event"
       @play-notes="playNotes($event)"
