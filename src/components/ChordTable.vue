@@ -24,8 +24,8 @@ const altInversion = ref(0)
 // Props
 
 const props = defineProps<{
-  scale: Array,
-  chords: Object,
+  scale: Array<string>,
+  chords: any,
   mode: number
 }>()
 </script>

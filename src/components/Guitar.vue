@@ -3,8 +3,8 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import {
   keyIndex, romanNumerals, noteDisplayOptions, ringDisplayOptions,
   collectionTypes
-} from './consts.ts';
-import { generateDrawTextFn, findRelationToRoot } from './helper-functions.ts';
+} from './consts';
+import { generateDrawTextFn, findRelationToRoot } from './helper-functions';
 import guitarImagePng from '@/assets/fretboard.png';
 import blueDotPng from '@/assets/blue-dot.png';
 import redDotPng from '@/assets/red-dot.png';
@@ -25,8 +25,8 @@ const strings = 6;
 const fretsPerLine = 24;
 const tuning = [4, 11, 7, 2, 9, 4];
 const props = defineProps<{
-  scale: Array,
-  chord: Array,
+  scale: Array<string>,
+  chord: Array<string>,
   mode: number,
   noteDisplayOption: noteDisplayOptions,
   ringDisplayOption: ringDisplayOptions
@@ -38,7 +38,7 @@ let isBeingDestroyed = false;
 
 // Refs
 
-const canvas = ref('canvas');
+const canvas = ref<any>(null);
 
 // Methods
 
@@ -59,7 +59,8 @@ const draw = (ctx, collection, primaryImage, secondaryImage, type, mode = 0) => 
         const index = collection.findIndex(note => notes.includes(note))
 
         if (type === collectionTypes.scale && props.noteDisplayOption !== noteDisplayOptions.none) {
-          const name = props.noteDisplayOption === noteDisplayOptions.notes ? collection[index] : romanNumerals[index];
+          const name = props.noteDisplayOption === noteDisplayOptions.notes ?
+            collection[index] : romanNumerals[Math.abs(index - mode) % collection.length];
           drawText(ctx, name, i, j)
         }
 
@@ -82,6 +83,14 @@ const drawScale = ctx => draw(ctx, props.scale, redDot, blueDot, collectionTypes
 const drawChord = ctx => draw(ctx, props.chord, orangeHoop, yellowHoop, collectionTypes.chord)
 const drawGuitar = ctx => ctx.drawImage(guitarImage, 0, 0);
 
+// Initiation
+
+guitarImage.src = guitarImagePng;
+yellowHoop.src = yellowHoopPng;
+orangeHoop.src = orangeHoopPng;
+blueDot.src = blueDotPng;
+redDot.src = redDotPng;
+
 // Hooks
 
 onMounted(() => {
@@ -97,14 +106,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => isBeingDestroyed = true);
-
-// Initiation
-
-guitarImage.src = guitarImagePng;
-yellowHoop.src = yellowHoopPng;
-orangeHoop.src = orangeHoopPng;
-blueDot.src = blueDotPng;
-redDot.src = redDotPng;
 </script>
 
 <template>

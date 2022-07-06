@@ -3,8 +3,8 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import {
   keyIndex, romanNumerals, noteDisplayOptions, ringDisplayOptions,
   collectionTypes
-} from './consts.ts';
-import { generateDrawTextFn, findRelationToRoot } from './helper-functions.ts';
+} from './consts';
+import { generateDrawTextFn, findRelationToRoot } from './helper-functions';
 import pianoImagePng from '@/assets/piano.png';
 import blueDotPng from '@/assets/blue-dot.png';
 import redDotPng from '@/assets/red-dot.png';
@@ -23,14 +23,14 @@ const stepHeight = 100;
 
 const pianoJumps = [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 25, 26];
 const pianoKeys = [1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1];
-const canvas = ref('canvas')
+const canvas = ref<any>(null);
 const xOffset = 11;
 const yOffset = 50;
 const textOffsetX = 27;
 const textOffsetY = 66;
 const props = defineProps<{
-  scale: Array,
-  chord: Array,
+  scale: Array<string>,
+  chord: Array<string>,
   mode: number,
   noteDisplayOption: noteDisplayOptions,
   ringDisplayOption: ringDisplayOptions
@@ -55,7 +55,8 @@ const draw = (ctx, collection, primaryImage, secondaryImage, type, mode = 0) => 
 
       if(type === collectionTypes.scale && props.noteDisplayOption !== noteDisplayOptions.none) {
         // const index = collection.findIndex(note => notes.includes(note))
-        const name = props.noteDisplayOption === noteDisplayOptions.notes ? collection[j] : romanNumerals[j];
+        const name = props.noteDisplayOption === noteDisplayOptions.notes ?
+          collection[j] : romanNumerals[Math.abs(j - mode) % collection.length];
         drawText(
           ctx,
           name,

@@ -3,8 +3,8 @@
 
 const props = defineProps<{
   name: String,
-  modelValue: Object,
-  options: Array
+  modelValue: any,
+  options: Array<string>
 }>()
 </script>
 

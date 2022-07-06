@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { noteDisplayOptions, ringDisplayOptions } from '@/components/consts.ts';
+import { noteDisplayOptions, ringDisplayOptions } from '@/components/consts';
 import Piano from '@/components/Piano.vue'
 import Guitar from '@/components/Guitar.vue'
 
@@ -21,8 +21,8 @@ const stagedChord = ref([])
 // Props
 
 const props = defineProps<{
-  scale: Array,
-  chord: Object,
+  scale: Array<string>,
+  chord: any,
   mode: number
 }>()
 </script>

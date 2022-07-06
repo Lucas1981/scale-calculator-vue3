@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { modes, scaleIntervalsMap } from '@/components/consts.ts';
+import { modes, scaleIntervalsMap } from '@/components/consts';
 import scalesAndChords from '@/assets/scales-and-chords.json'
 import Instrument from '@/components/instrument.vue';
 import ChordTable from '@/components/ChordTable.vue'
