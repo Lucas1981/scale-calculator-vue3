@@ -21,6 +21,7 @@ const stagedChord = ref([])
 // Computed
 
 const computedMode = computed(() => {
+  // @ts-ignore: Object is possibly 'undefined'.
   const foundKey = Object.entries(scalesAndChords)
     .find(([localKey, value]) =>
       value[scale.value].scale[mode.value] === key.value
@@ -86,7 +87,6 @@ const computedChords = computed(() => computedMode.value.chords);
       :chords="computedChords"
       :mode="mode"
       @stage-chord="stagedChord = $event"
-      @play-notes="playNotes($event)"
     />
   </div>
 </template>

@@ -13,9 +13,9 @@ const synth = new Tone.Sampler({
       release: 1,
       baseUrl: "https://tonejs.github.io/audio/salamander/"
 }).toDestination();
-const duration = .3; // 300ms
+const defaultDuration = .3; // 300ms
 
-export const playNotes = notes => {
+export const playNotes = (notes, duration = defaultDuration) => {
   const now = Tone.now()
   let prevNoteLetter = null;
   let octave = 4;

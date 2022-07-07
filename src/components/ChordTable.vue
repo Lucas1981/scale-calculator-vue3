@@ -4,8 +4,15 @@ import {
   romanNumerals, thirdsInversions, seventhInversions, susInversions, chordNameMap
 } from './consts.js';
 import ScRadio from './Radio.vue';
+import { playNotes } from '@/components/play-note.js';
 
 // Consts
+
+const playbackOptions = [
+  { value: 0, text: 'Full chords' },
+  { value: 0.15, text: 'Fast arpeggio' },
+  { value: 0.3, text: 'Slow arpeggio' }
+];
 
 const invert = (notes, inversion) => [
   ...notes.slice(inversion),
@@ -20,7 +27,7 @@ const thirdsInversion = ref(0)
 const susInversion = ref(0)
 const seventhInversion = ref(0)
 const altInversion = ref(0)
-
+const playback = ref(playbackOptions[0].value)
 // Props
 
 const props = defineProps<{
@@ -31,7 +38,13 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="d-flex">
+  <div class="d-flex align-items-center">
+    <div class="me-4 mb-2">
+      <label for="playback" class="form-label">Chord playback</label>
+      <select class="form-select" v-model="playback" name="playback">
+        <option v-for="option in playbackOptions" :value="option.value">{{ option.text }}</option>
+      </select>
+    </div>
     <div class="form-check me-2">
       <input v-model="showSusChords" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
       <label class="form-check-label" for="flexCheckDefault">
@@ -102,8 +115,8 @@ const props = defineProps<{
               <button
                 type="button"
                 class="btn btn-primary btn-sm"
-                @click="$emit('play-notes',
-                  invert(chords.triadChords[(index + mode) % scale.length].notes, thirdsInversion)
+                @click="playNotes(
+                  invert(chords.triadChords[(index + mode) % scale.length].notes, thirdsInversion), playback
                 )"
               >
                 Play
@@ -122,8 +135,8 @@ const props = defineProps<{
                 <button
                   type="button"
                   class="btn btn-primary btn-sm"
-                  @click="$emit('play-notes',
-                    invert(chord.notes, susInversion)
+                  @click="playNotes(
+                    invert(chord.notes, susInversion), playback
                   )"
                 >
                   Play
@@ -142,8 +155,8 @@ const props = defineProps<{
               <button
                 type="button"
                 class="btn btn-primary btn-sm"
-                @click="$emit('play-notes',
-                  invert(chords.seventhChords[(index + mode) % scale.length].notes, seventhInversion)
+                @click="playNotes(
+                  invert(chords.seventhChords[(index + mode) % scale.length].notes, seventhInversion), playback
                 )"
               >
                 Play
@@ -164,8 +177,8 @@ const props = defineProps<{
                 <button
                   type="button"
                   class="btn btn-primary btn-sm"
-                  @click="$emit('play-notes',
-                    invert(chord.notes, altInversion)
+                  @click="playNotes(
+                    invert(chord.notes, altInversion), playback
                   )"
                 >
                   Play
