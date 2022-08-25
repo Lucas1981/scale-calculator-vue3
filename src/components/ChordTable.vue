@@ -18,6 +18,7 @@ const invert = (notes, inversion) => [
   ...notes.slice(inversion),
   ...notes.slice(0, inversion)
 ]
+const speed = .3;
 
 // Refs
 
@@ -116,7 +117,7 @@ const props = defineProps<{
                 type="button"
                 class="btn btn-primary btn-sm"
                 @click="playNotes(
-                  invert(chords.triadChords[(index + mode) % scale.length].notes, thirdsInversion), playback
+                  invert(chords.triadChords[(index + mode) % scale.length].notes, thirdsInversion), speed, 0, playback
                 )"
               >
                 Play
@@ -136,7 +137,7 @@ const props = defineProps<{
                   type="button"
                   class="btn btn-primary btn-sm"
                   @click="playNotes(
-                    invert(chord.notes, susInversion), playback
+                    invert(chord.notes, susInversion), speed, 0, playback
                   )"
                 >
                   Play
@@ -156,7 +157,7 @@ const props = defineProps<{
                 type="button"
                 class="btn btn-primary btn-sm"
                 @click="playNotes(
-                  invert(chords.seventhChords[(index + mode) % scale.length].notes, seventhInversion), playback
+                  invert(chords.seventhChords[(index + mode) % scale.length].notes, seventhInversion), speed, 0, playback
                 )"
               >
                 Play
@@ -178,7 +179,7 @@ const props = defineProps<{
                   type="button"
                   class="btn btn-primary btn-sm"
                   @click="playNotes(
-                    invert(chord.notes, altInversion), playback
+                    invert(chord.notes, altInversion), speed, 0, playback
                   )"
                 >
                   Play

@@ -17,7 +17,6 @@ import HomeView from '@/views/HomeView.vue';
   </header>
 
   <div class="mt-2">
-    <!-- <RouterView /> -->
-    <home-view />
+    <RouterView />
   </div>
 </template>

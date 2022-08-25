@@ -23,6 +23,10 @@ const stagedChord = ref([])
 const props = defineProps<{
   scale: Array<string>,
   chord: any,
+  showOptions: {
+    type: Boolean,
+    default: true
+  }
 }>()
 </script>
 
@@ -53,18 +57,20 @@ const props = defineProps<{
         <input class="form-check-input" type="radio" name="instrument" v-model="instrument" :value="instruments.guitar" />
         <label :for="instruments.guitar" class="form-check-label" >Guitar</label>
       </div>
-      <label for="noteDisplay" class="form-label mt-2">Note display</label>
-      <select class="form-select" v-model="noteDisplayOption" name="noteDisplay">
-        <option v-for="option in noteDisplayOptions">
-          {{ option }}
-        </option>
-      </select>
-      <label for="ringDisplay" class="form-label mt-2">Ring display</label>
-      <select class="form-select" v-model="ringDisplayOption" name="noteDisplay">
-        <option v-for="option in ringDisplayOptions">
-          {{ option }}
-        </option>
-      </select>
+      <template v-if="showOptions">
+        <label for="noteDisplay" class="form-label mt-2">Note display</label>
+        <select class="form-select" v-model="noteDisplayOption" name="noteDisplay">
+          <option v-for="option in noteDisplayOptions">
+            {{ option }}
+          </option>
+        </select>
+        <label for="ringDisplay" class="form-label mt-2">Ring display</label>
+        <select class="form-select" v-model="ringDisplayOption" name="noteDisplay">
+          <option v-for="option in ringDisplayOptions">
+            {{ option }}
+          </option>
+        </select>
+      </template>
     </div>
   </div>
 </template>
