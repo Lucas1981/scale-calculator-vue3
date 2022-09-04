@@ -101,3 +101,31 @@ export const chordNameMap = {
   sus2: 'Sus2',
   sus4: 'Sus4'
 }
+
+export const shorthandMap = {
+  // sus4: 'sus4',
+  // sus2: 'sus2',
+
+  major: '',
+  minor: 'm',
+  diminished: 'dim',
+  augmented: '+',
+
+  dominantSeventh: '7',
+  majorSeventh: 'M7',
+  minorSeventh: 'm7',
+  minorMajorSeventh: 'mM7',
+  halfDiminishedSeventh: 'ø',
+  diminishedSeventh: '°',
+  majorSixth: 'M6',
+  minorSixth: 'm6'
+};
+
+export const denominatorMap = new Map([
+  [1, '1m'],
+  [2, '2n'],
+  [4, '4n'],
+  [8, '8n'],
+  [16, '16n'],
+  [32, '32n']
+]);

@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 import ChordTable from '@/components/ChordTable.vue'
+import ChordGrid from '@/components/ChordGrid.vue';
+import ChordAccordion from '@/components/ChordAccordion.vue';
+import PlaybackControls from '@/components/PlaybackControls.vue';
 import rawChords from '@/assets/chords.json'
 import { playNotes, scheduleChords, stopNotes, setBpm } from '@/components/play-note.js';
 import { computed, ref, onBeforeMount, onBeforeUnmount } from 'vue'
@@ -7,6 +10,7 @@ import FileHandler from '@/classes/FileHandler.ts';
 import Instrument from '@/components/Instrument.vue';
 import { addSixthChords } from '@/components/helper-functions';
 import { states } from '@/components/chord-grid-states';
+import { denominatorMap } from '@/components/consts.ts';
 
 // Static variables
 
@@ -15,43 +19,8 @@ const cellMargin = 4;
 const barMargin = 16;
 const chords = addSixthChords(rawChords);
 const defaultBars = 12;
-const denominatorMap = new Map([
-  [1, '1m'],
-  [2, '2n'],
-  [4, '4n'],
-  [8, '8n'],
-  [16, '16n'],
-  [32, '32n']
-]);
-const allowedKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'F#', 'Ab', 'Db', 'Bb', 'Eb'];
 const numerators = new Array(32).fill(null).map((_, index) => index);
 const denominators = new Array(6).fill(null).map((_, index) => 2 ** index);
-const shorthandMap = {
-  // sus4: 'sus4',
-  // sus2: 'sus2',
-
-  major: '',
-  minor: 'm',
-  diminished: 'dim',
-  augmented: '+',
-
-  dominantSeventh: '7',
-  majorSeventh: 'M7',
-  minorSeventh: 'm7',
-  minorMajorSeventh: 'mM7',
-  halfDiminishedSeventh: 'ø',
-  diminishedSeventh: '°',
-  majorSixth: 'M6',
-  minorSixth: 'm6'
-}
-
-const chordNames = Object.keys(chords)
-  .filter(type => Object.keys(shorthandMap).includes(type))
-  .map(name =>
-    Object.values(chords[name])
-      .filter(value => allowedKeys.includes(value[0]))
-      .map(value => ({ name: `${value[0]}${shorthandMap[name]}`, value }))
-  )
 
 // Refs
 
@@ -199,8 +168,6 @@ const removeBar = () => {
   }
 }
 
-const getDisplay = chord => chord?.name || '';
-
 const handleKeyInput = e => {
   // console.log(e);
   const base = numerator.value * bars.value;
@@ -310,115 +277,30 @@ onBeforeUnmount(() => {
       <input type="file" class="d-none" ref="fileInput" @change="loadFile($event)"/>
     </div>
   </div>
-  <div
-    class="background-black mb-2"
-    :class="{
-      'border-blue': recording && state !== states.recording,
-      'border-red': state === states.recording
-    }"
-  >
-    <div
-      class="container py-3"
-    >
-      <div
-        class="stage"
-        :style="`width: ${computedWidth}px`"
-      >
-        <div
-          class="chord-cell mb-2 position-relative"
-          v-for="(chord, chordIndex) in stagedChords"
-          :key="`chord-cell-${chordIndex}`"
-          :class="{
-            'chord-cell--whole-note': denominator === 1,
-            'chord-cell--half-note': denominator === 2,
-            'highlight': chordIndex === cursor,
-            'next-bar': !(chordIndex % numerator)
-          }"
-          @click="handleSetCursor(chordIndex)"
-        >
-          <div
-            v-if="chordIndex % numerator === 0"
-            class="position-absolute chord-cell__chord-index"
-          >
-            {{ 1 + (chordIndex / numerator) }}
-          </div>
-          <div
-            class="chord-cell__numerator"
-            :class="{
-              'highlight': chordIndex === cursor,
-            }"
-          >
-            {{ 1 + (chordIndex % numerator) }}
-          </div>
-          <div class="position-absolute">{{ getDisplay(chord) }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
+
+  <chord-grid
+    :recording="recording"
+    :state="state"
+    :computedWidth="computedWidth"
+    :staged-chords="stagedChords"
+    :denominator="denominator"
+    :numerator="numerator"
+    :cursor="cursor"
+    @set-cursor="handleSetCursor"
+  />
+
   <div class="container">
     <div class="d-flex justify-content-between">
-      <div>
-        <button
-          type="button"
-          class="btn btn-primary"
-          :disabled="state === states.playing"
-          @click="playSequence(false, false)"
-        >
-          Play
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-primary ms-1"
-          @click="pauseSequence"
-        >
-          Pause
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-primary ms-1"
-          @click="stopSequence"
-        >
-          Stop
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-primary ms-1"
-          :disabled="state === states.playing"
-          @click="playSequence(true, false)"
-        >
-          Loop
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-primary ms-1"
-          @click="cursor = 0"
-          :disabled="state === states.playing"
-        >
-          Rewind
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-danger ms-1"
-          :disabled="state === states.playing"
-          @click="recordSequence"
-        >
-          Record
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-danger ms-1"
-          @click="clearSequence"
-        >
-          Clear
-        </button>
-      </div>
-
+      <playback-controls
+        :state="state"
+        @play="playSequence(false, false)"
+        @pause="pauseSequence"
+        @stop="stopSequence"
+        @loop="playSequence(true, false)"
+        @rewind="cursor = 0"
+        @record="recordSequence"
+        @clear="clearSequence"
+      />
       <div>
         <button
           type="button"
@@ -445,105 +327,16 @@ onBeforeUnmount(() => {
       :show-options="false"
     />
 
-    <div class="d-flex chord-row" v-for="chordType in chordNames">
-      <div
-        class="chord"
-        v-for="chord in chordType"
-        @click="stageChord(chord)"
-        @mouseover="stagedChord = chord.value"
-        @mouseout="showChord"
-      >
-        {{ chord.name }}
-      </div>
-    </div>
+    <chord-accordion
+      :chords="chords"
+      @click="stageChord($event)"
+      @mouseover="stagedChord = $event"
+      @mouseout="showChord"
+    />
   </div>
 </template>
 
 <style scoped>
-.chord-cell {
-  color: white;
-  font-family: "Courier New", monospace;
-  width: 64px;
-  height: 2rem;
-  margin-right: 4px;
-  border-bottom: solid white 2px;
-  float: left;
-  line-height: 2.5rem;
-}
-
-.next-bar {
-  margin-left: 16px;
-}
-
-.chord-cell--whole-note {
-  width: 256px;
-}
-
-.chord-cell--half-note {
-  width: 128px;
-}
-
-.chord-cell__chord-index,
-.chord-cell__numerator {
-  color: #aaa;
-  position: absolute;
-  font-size: 10px;
-  left: 0;
-}
-
-.chord-cell__numerator {
-  line-height: 1rem;
-  top: 0;
-}
-
-.chord-cell__chord-index {
-  line-height: 1rem;
-  top: 21px;
-  margin-left: -18px;
-  text-align: right;
-  width: 1rem;
-}
-
-/* .chord-cell:nth-child(4n + 1) {
-  margin-left: 8px;
-} */
-
-.highlight {
-  color: black;
-  background: white;
-}
-
-.chord {
-  width: 64rem;
-  border: solid grey 1px;
-  padding: 2px 4px;
-  margin-right: 2px;
-  cursor: pointer;
-}
-
-.chord-row {
-  margin: 8px 0;
-}
-
-.background-black {
-  background: black;
-  border: black 10px solid;
-  box-sizing: border-box;
-}
-
-.border-blue {
-  border-color: blue;
-}
-
-.border-red {
-  border-color: red;
-}
-
-.stage {
-  height: 200px;
-  overflow-y: scroll;
-}
-
 .custom-input-width {
   min-width: 4rem;
   max-width: 5rem;
