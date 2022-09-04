@@ -3,6 +3,7 @@ import ChordTable from '@/components/ChordTable.vue'
 import ChordGrid from '@/components/ChordGrid.vue';
 import ChordAccordion from '@/components/ChordAccordion.vue';
 import PlaybackControls from '@/components/PlaybackControls.vue';
+import MainControls from '@/components/MainControls.vue';
 import rawChords from '@/assets/chords.json'
 import { playNotes, scheduleChords, stopNotes, setBpm } from '@/components/play-note.js';
 import { computed, ref, onBeforeMount, onBeforeUnmount } from 'vue'
@@ -19,8 +20,8 @@ const cellMargin = 4;
 const barMargin = 16;
 const chords = addSixthChords(rawChords);
 const defaultBars = 12;
-const numerators = new Array(32).fill(null).map((_, index) => index);
-const denominators = new Array(6).fill(null).map((_, index) => 2 ** index);
+const defaultNumerator = 4;
+const defaultDenominator = 4;
 
 // Refs
 
@@ -29,8 +30,8 @@ const fileInput = ref(null);
 const maxWidth = 5 * 4 * cellSize;
 const recording = ref(false);
 const state = ref(states.stopped);
-const numerator = ref(4);
-const denominator = ref(4);
+const numerator = ref(defaultNumerator);
+const denominator = ref(defaultDenominator);
 const bpm = ref(128);
 const stagedChords = ref(new Array(numerator.value * defaultBars).fill(null));
 const stagedChord = ref([]);
@@ -251,26 +252,12 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="container d-flex mb-2 justify-content-between">
-    <div class="d-flex align-items-center">
-      <div class="me-2">Time:</div>
-      <div>
-        <select name="time-signature" v-model="numerator" class="form-select custom-input-width" @change="handleChangeTimeSignature">
-          <option v-for="value in numerators" :key="`numerator-${value}`" :value="value">
-            {{ value }}
-          </option>
-        </select>
-      </div>
-      <div class="mx-1">/</div>
-      <div>
-        <select v-model="denominator" class="form-select custom-input-width" @change="handleChangeTimeSignature">
-          <option v-for="value in denominators" :key="`denominator-${value}`" :value="value">
-            {{ value }}
-          </option>
-        </select>
-      </div>
-      <div class="mx-2">BPM:</div>
-      <input type="number" v-model="bpm" class="form-control custom-input-width"/>
-    </div>
+    <main-controls
+      v-model:bpm="bpm"
+      v-model:denominator="denominator"
+      v-model:numerator="numerator"
+      @change-time-signature="handleChangeTimeSignature"
+    />
     <div>
       <button class="btn btn-primary" type="button" @click="handleSaveFile">Save file</button>
       <button class="btn btn-primary ms-2" type="button" @click="handleLoadFile">Load file</button>
@@ -281,7 +268,7 @@ onBeforeUnmount(() => {
   <chord-grid
     :recording="recording"
     :state="state"
-    :computedWidth="computedWidth"
+    :computed-width="computedWidth"
     :staged-chords="stagedChords"
     :denominator="denominator"
     :numerator="numerator"
@@ -335,10 +322,3 @@ onBeforeUnmount(() => {
     />
   </div>
 </template>
-
-<style scoped>
-.custom-input-width {
-  min-width: 4rem;
-  max-width: 5rem;
-}
-</style>

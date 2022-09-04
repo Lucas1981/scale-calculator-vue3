@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { watchEffect, Ref } from 'vue';
 import { states } from '@/components/chord-grid-states';
 
 const getDisplay = chord => chord?.name || '';
@@ -8,9 +9,9 @@ const props = defineProps<{
   state: any,
   computedWidth: any,
   stagedChords: any,
-  denominator: any,
-  numerator: any,
-  cursor: any
+  denominator: Ref<number>,
+  numerator: Ref<number>,
+  cursor: Ref<number>
 }>()
 </script>
 
