@@ -25,21 +25,21 @@ So it feels like this is more its own thing. I'd want to enumerate some features
 - [x] Disallow adding new chords during playback
 - [x] Create "record", which is playback but with option to add new chords
 - [x] There is this strange bug that the synth has to be triggered once in order for the playback to start
-- [x] Allow adding rows
-- [x] Allow removing rows
+- [x] Allow adding bars
+- [x] Allow removing bars
 - [x] Make the rows better divided
 - [x] Allow save and load files
 - [x] Show the notes being played per chord on a piano or guitar instrument
-- [ ] Add sixth chords - really inversions, but just used all the time
-- [ ] Fix the faulty duration of notes
-- [ ] Enumerate rows
-- [ ] Enumerate bars and counts
-- [ ] Add interface to name .json file
+- [x] Add sixth chords - really inversions, but just used all the time
+- [x] Fix the faulty duration of notes
+- [x] Enumerate bars and counts
+- [x] Add interface to name .json file
 - [ ] Clean it all up!
 
 Way in the future:
 - [ ] Try and use the native loop capabilities
-- [ ] Show total duration of composition
+- [ ] Show total bars + duration of composition
+- [ ] Transpose composition up or down a half step
 - [ ] Add copy/paste feature
 - [ ] Specify key and suggest chords that can be played
 - [ ] Add a bassline so that you can create slash chords
@@ -47,3 +47,4 @@ Way in the future:
 - [ ] Allow hihat metronome to play along
 - [ ] Allow count-in of 1 bar
 - [ ] Allow 9th, 11th and 13th extensions to the harmonies?
+- [ ] Allow arbitrary alterations to the chords (b5, \#5, etc)

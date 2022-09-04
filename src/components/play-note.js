@@ -39,7 +39,7 @@ export const playNotes = (notes, duration = defaultDuration, time = 0, arpeggio 
   if (arpeggio !== 0) {
     for (let i = 0; i < finalNotes.length; i++) {
       synth
-        .triggerAttackRelease(finalNotes[i], duration, (arpeggio * i) + (time || now));          
+        .triggerAttackRelease(finalNotes[i], duration, (arpeggio * i) + (time || now));
     }
   } else {
     synth

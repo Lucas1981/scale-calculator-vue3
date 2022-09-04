@@ -1,10 +1,23 @@
 <script lang="ts" setup>
 import ChordTable from '@/components/ChordTable.vue'
-import chords from '@/assets/chords.json'
+import rawChords from '@/assets/chords.json'
 import { playNotes, scheduleChords, stopNotes, setBpm } from '@/components/play-note.js';
 import { computed, ref, onBeforeMount, onBeforeUnmount } from 'vue'
 import FileHandler from '@/classes/FileHandler.ts';
 import Instrument from '@/components/Instrument.vue';
+
+const chords = {
+  ...rawChords,
+  // These are really inversions of seventh chords, but used as chords in practice
+  majorSixth: Object.values(rawChords['minorSeventh']).reduce((acc, value) => ({
+    ...acc,
+    [value[1]]: [...value.slice(1), ...value.slice(0, 1)]
+  }), {}),
+  minorSixth: Object.values(rawChords['halfDiminishedSeventh']).reduce((acc, value) => ({
+    ...acc,
+    [value[1]]: [...value.slice(1), ...value.slice(0, 1)]
+  }), {})
+};
 
 enum states {
   stopped = 1,
@@ -14,16 +27,16 @@ enum states {
 
 const cellSize = 64;
 const cellMargin = 4;
-const barMargin = 8;
+const barMargin = 16;
 const cursor = ref(0);
 const fileInput = ref(null);
 const maxWidth = 5 * 4 * cellSize;
 const recording = ref(false);
 const state = ref(states.stopped);
-const numerator = ref(6);
-const denominator = ref(8);
-const bpm = ref(110);
-const defaultBars = 4;
+const numerator = ref(4);
+const denominator = ref(4);
+const bpm = ref(128);
+const defaultBars = 12;
 const denominatorMap = new Map([
   [1, '1m'],
   [2, '2n'],
@@ -53,7 +66,9 @@ const shorthandMap = {
   minorSeventh: 'm7',
   minorMajorSeventh: 'mM7',
   halfDiminishedSeventh: 'ø',
-  diminishedSeventh: '°'
+  diminishedSeventh: '°',
+  majorSixth: 'M6',
+  minorSixth: 'm6'
 }
 
 const chordNames = Object.keys(chords)
@@ -119,7 +134,7 @@ const playSequence = (loop = false, record = false) => {
       // Find the distance to the next chord
       const nextIndex = subset.findIndex(record => record);
       // If we did not find a next chord, let it sound out till the end of the sequence
-      const duration = nextIndex === -1 ? subset.length + 2: nextIndex + 2;
+      const duration = nextIndex === -1 ? subset.length + 1: nextIndex + 1;
       chordSequence.push({
         notes: value?.value || [],
         duration,
@@ -186,6 +201,10 @@ const addBar = () => {
 const removeBar = () => {
   stagedChords.value
     .splice(stagedChords.value.length - numerator.value, numerator.value);
+
+  if (cursor.value > stagedChords.value.length - 1) {
+    cursor.value = stagedChords.value.length - 1;
+  }
 }
 
 const getDisplay = chord => chord?.name || '';
@@ -227,7 +246,9 @@ const handleKeyInput = e => {
 }
 
 const handleSaveFile = () => {
-    FileHandler.downloadJsonFile('song.json', {
+    const filename = prompt('Enter filename');
+    if (!filename) return;
+    FileHandler.downloadJsonFile(filename, {
       numerator: numerator.value,
       denominator: denominator.value,
       bpm: bpm.value,
@@ -310,18 +331,32 @@ onBeforeUnmount(() => {
         :style="`width: ${computedWidth}px`"
       >
         <div
-          class="chord-cell"
+          class="chord-cell mb-2 position-relative"
           v-for="(chord, chordIndex) in stagedChords"
           :key="`chord-cell-${chordIndex}`"
           :class="{
             'chord-cell--whole-note': denominator === 1,
             'chord-cell--half-note': denominator === 2,
             'highlight': chordIndex === cursor,
-            'ms-2': !(chordIndex % numerator)
+            'next-bar': !(chordIndex % numerator)
           }"
           @click="handleSetCursor(chordIndex)"
         >
-          {{ getDisplay(chord) }}
+          <div
+            v-if="chordIndex % numerator === 0"
+            class="position-absolute chord-cell__chord-index"
+          >
+            {{ 1 + (chordIndex / numerator) }}
+          </div>
+          <div
+            class="chord-cell__numerator"
+            :class="{
+              'highlight': chordIndex === cursor,
+            }"
+          >
+            {{ 1 + (chordIndex % numerator) }}
+          </div>
+          <div class="position-absolute">{{ getDisplay(chord) }}</div>
         </div>
       </div>
     </div>
@@ -403,6 +438,7 @@ onBeforeUnmount(() => {
           type="button"
           class="btn btn-primary ms-1"
           @click="removeBar"
+          :disabled="numerator >= stagedChords.length - 1"
         >
           Remove bar
         </button>
@@ -441,12 +477,37 @@ onBeforeUnmount(() => {
   line-height: 2.5rem;
 }
 
+.next-bar {
+  margin-left: 16px;
+}
+
 .chord-cell--whole-note {
   width: 256px;
 }
 
 .chord-cell--half-note {
   width: 128px;
+}
+
+.chord-cell__chord-index,
+.chord-cell__numerator {
+  color: #aaa;
+  position: absolute;
+  font-size: 10px;
+  left: 0;
+}
+
+.chord-cell__numerator {
+  line-height: 1rem;
+  top: 0;
+}
+
+.chord-cell__chord-index {
+  line-height: 1rem;
+  top: 21px;
+  margin-left: -18px;
+  text-align: right;
+  width: 1rem;
 }
 
 /* .chord-cell:nth-child(4n + 1) {
