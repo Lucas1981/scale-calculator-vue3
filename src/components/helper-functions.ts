@@ -19,3 +19,16 @@ export const findRelationToRoot = (note, root, scale) => {
   // compensate for when the root is higher than the note
   return rootIndex + (rootIndex < noteIndex ? scale.length : 0) - noteIndex;
 }
+
+export const addSixthChords = chords => ({
+  ...chords,
+  // These are really inversions of seventh chords, but used as chords in practice
+  majorSixth: Object.values(chords['minorSeventh']).reduce((acc, value) => ({
+    ...acc,
+    [value[1]]: [...value.slice(1), ...value.slice(0, 1)]
+  }), {}),
+  minorSixth: Object.values(chords['halfDiminishedSeventh']).reduce((acc, value) => ({
+    ...acc,
+    [value[1]]: [...value.slice(1), ...value.slice(0, 1)]
+  }), {})
+})

@@ -5,37 +5,15 @@ import { playNotes, scheduleChords, stopNotes, setBpm } from '@/components/play-
 import { computed, ref, onBeforeMount, onBeforeUnmount } from 'vue'
 import FileHandler from '@/classes/FileHandler.ts';
 import Instrument from '@/components/Instrument.vue';
+import { addSixthChords } from '@/components/helper-functions';
+import { states } from '@/components/chord-grid-states';
 
-const chords = {
-  ...rawChords,
-  // These are really inversions of seventh chords, but used as chords in practice
-  majorSixth: Object.values(rawChords['minorSeventh']).reduce((acc, value) => ({
-    ...acc,
-    [value[1]]: [...value.slice(1), ...value.slice(0, 1)]
-  }), {}),
-  minorSixth: Object.values(rawChords['halfDiminishedSeventh']).reduce((acc, value) => ({
-    ...acc,
-    [value[1]]: [...value.slice(1), ...value.slice(0, 1)]
-  }), {})
-};
-
-enum states {
-  stopped = 1,
-  playing,
-  recording
-};
+// Static variables
 
 const cellSize = 64;
 const cellMargin = 4;
 const barMargin = 16;
-const cursor = ref(0);
-const fileInput = ref(null);
-const maxWidth = 5 * 4 * cellSize;
-const recording = ref(false);
-const state = ref(states.stopped);
-const numerator = ref(4);
-const denominator = ref(4);
-const bpm = ref(128);
+const chords = addSixthChords(rawChords);
 const defaultBars = 12;
 const denominatorMap = new Map([
   [1, '1m'],
@@ -45,10 +23,6 @@ const denominatorMap = new Map([
   [16, '16n'],
   [32, '32n']
 ]);
-
-const stagedChords = ref(new Array(numerator.value * defaultBars).fill(null));
-const stagedChord = ref([]);
-const prevChord = ref([]);
 const allowedKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'F#', 'Ab', 'Db', 'Bb', 'Eb'];
 const numerators = new Array(32).fill(null).map((_, index) => index);
 const denominators = new Array(6).fill(null).map((_, index) => 2 ** index);
@@ -79,6 +53,22 @@ const chordNames = Object.keys(chords)
       .map(value => ({ name: `${value[0]}${shorthandMap[name]}`, value }))
   )
 
+// Refs
+
+const cursor = ref(0);
+const fileInput = ref(null);
+const maxWidth = 5 * 4 * cellSize;
+const recording = ref(false);
+const state = ref(states.stopped);
+const numerator = ref(4);
+const denominator = ref(4);
+const bpm = ref(128);
+const stagedChords = ref(new Array(numerator.value * defaultBars).fill(null));
+const stagedChord = ref([]);
+const prevChord = ref([]);
+
+// Computed
+
 const barLength = computed(() => {
   let unit = cellSize;
 
@@ -102,6 +92,8 @@ const computedWidth = computed(() => {
 })
 
 const bars = computed(() => stagedChords.value.length / numerator.value);
+
+// Methods
 
 const stageChord = chord => {
   if (chord.value) playNotes(chord.value, 1, 0);
@@ -278,6 +270,8 @@ const handleChangeTimeSignature = () => {
     ]
   }
 }
+
+// Hooks
 
 onBeforeMount(() => {
   window.addEventListener('keydown', handleKeyInput);
