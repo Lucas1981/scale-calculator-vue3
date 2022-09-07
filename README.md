@@ -34,17 +34,24 @@ So it feels like this is more its own thing. I'd want to enumerate some features
 - [x] Fix the faulty duration of notes
 - [x] Enumerate bars and counts
 - [x] Add interface to name .json file
-- [ ] Clean it all up!
+- [x] Clean it all up!
+
+Bugs in the sequencer:
+- [x] Cursor jumps two positions when staging a chord
+- [x] Chords don't light up anymore when hovering on the chords in accordion
+- [x] Wrap around the cursor when it reaches the end and chord is added
+- [x] Duration of the notes during playback is wrong
 
 Way in the future:
+- [x] Show total bars + duration of composition
+- [x] Specify key and suggest chords that can be played
+- [x] Transpose composition up or down a half step
+- [ ] Keep top half fixed
 - [ ] Try and use the native loop capabilities
-- [ ] Show total bars + duration of composition
-- [ ] Transpose composition up or down a half step
 - [ ] Add copy/paste feature
-- [ ] Specify key and suggest chords that can be played
 - [ ] Add a bassline so that you can create slash chords
 - [ ] Save and load MIDI files
 - [ ] Allow hihat metronome to play along
 - [ ] Allow count-in of 1 bar
 - [ ] Allow 9th, 11th and 13th extensions to the harmonies?
-- [ ] Allow arbitrary alterations to the chords (b5, \#5, etc)
+- [ ] Allow arbitrary alterations to the chords (b5, \#5, etc)?

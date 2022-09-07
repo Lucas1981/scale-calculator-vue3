@@ -69,6 +69,17 @@ const props = defineProps<{
   overflow-y: scroll;
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.stage::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.stage {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 .chord-cell {
   color: white;
   font-family: "Courier New", monospace;

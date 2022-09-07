@@ -1,4 +1,12 @@
 <script lang="ts" setup>
+import chords from '@/assets/chords.json'
+import scalesAndChords from '@/assets/scales-and-chords.json'
+import { chordNameMap } from '@/components/consts.ts';
+
+const scales = Object.keys(Object.values(scalesAndChords)[0]);
+const keys = Object.keys(Object.values(chords)[0])
+  .filter(name => name.length < 3);
+
 const emit = defineEmits([
   'update:numerator',
   'update:denominator',
@@ -9,6 +17,8 @@ const emit = defineEmits([
 const props = defineProps<{
   numerator: any,
   denominator: any,
+  myKey: any,
+  scale: any,
   bpm: any
 }>()
 
@@ -61,6 +71,29 @@ const handleChangeDenominator = event => {
       @input="$emit('update:bpm', $event.target.value)"
       class="form-control custom-input-width"
     />
+    <div class="mx-2">Key:</div>
+    <div>
+      <select
+        :value="myKey"
+        class="form-select"
+        name="key"
+        @input="$emit('update:my-key', $event.target.value)"
+      >
+        <option v-for="keyValue in keys">{{ keyValue }}</option>
+      </select>
+    </div>
+    <div class="ms-1">
+      <select
+        :value="scale"
+        class="form-select"
+        name="key"
+        @input="$emit('update:scale', $event.target.value)"
+      >
+        <option v-for="typeValue in scales" :value="typeValue">
+          {{ chordNameMap[typeValue] || typeValue }}
+        </option>
+      </select>
+    </div>
   </div>
 </template>
 

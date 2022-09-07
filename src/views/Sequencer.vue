@@ -11,7 +11,7 @@ import FileHandler from '@/classes/FileHandler.ts';
 import Instrument from '@/components/Instrument.vue';
 import { addSixthChords } from '@/components/helper-functions';
 import { states } from '@/components/chord-grid-states';
-import { denominatorMap } from '@/components/consts.ts';
+import { denominatorMap, shorthandMap } from '@/components/consts.ts';
 
 // Static variables
 
@@ -22,6 +22,7 @@ const chords = addSixthChords(rawChords);
 const defaultBars = 12;
 const defaultNumerator = 4;
 const defaultDenominator = 4;
+const notesOrder = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 
 // Refs
 
@@ -36,6 +37,8 @@ const bpm = ref(128);
 const stagedChords = ref(new Array(numerator.value * defaultBars).fill(null));
 const stagedChord = ref([]);
 const prevChord = ref([]);
+const key = ref('C');
+const scale = ref('major');
 
 // Computed
 
@@ -62,11 +65,17 @@ const computedWidth = computed(() => {
 })
 
 const bars = computed(() => stagedChords.value.length / numerator.value);
+const duration = computed(() => {
+  // Get total in seconds
+  const seconds = 0.5 * (120 / bpm.value) * (4 / denominator.value) * (numerator.value * bars.value);
+  // Convert to h:mm:ss
+  return new Date(seconds * 1000).toISOString().substr(11, 8);;
+});
 
 // Methods
 
 const stageChord = chord => {
-  if (chord.value) playNotes(chord.value, 1, 0);
+  if (chord.value) playNotes(chord.value, 1, 0, 0, false);
 
   if (state.value === states.recording) {
     stagedChords.value[cursor.value] = chord;
@@ -75,12 +84,12 @@ const stageChord = chord => {
 
   if (recording.value && state.value !== states.playing) {
     stagedChords.value[cursor.value] = chord;
-    cursor.value++;
+    cursor.value = (cursor.value + 1) % stagedChords.value.length;
   }
 }
 
 const setChord = (index, chord) => {
-  if (chord !== null) playNotes(chord.value, 1, 0);
+  if (chord !== null) playNotes(chord.value, 1, 0, 0, false);
   if (!recording.value) return;
   stagedChords.value[index] = chord;
 }
@@ -239,6 +248,25 @@ const handleChangeTimeSignature = () => {
   }
 }
 
+const transpose = direction => {
+  for (let i = 0; i < stagedChords.value.length; i++) {
+    if (!stagedChords.value[i]?.name) continue;
+    // Get this key
+    const currentKey = stagedChords.value[i].name.replace(/[^A-Gb\#]/g, '');
+    const currentType = stagedChords.value[i].name.replace(/[A-Gb\#]/g, '');
+    // Get the next one in line
+    const nextKey = notesOrder[
+      (notesOrder.length + notesOrder.indexOf(currentKey) + direction) % notesOrder.length
+    ];
+    const longform = (Object.entries(shorthandMap)
+      .find(([key, value]) => value === currentType))[0]
+    stagedChords.value[i] = {
+      name: `${nextKey}${currentType}`,
+      value: chords[longform][nextKey]
+    };
+  }
+}
+
 // Hooks
 
 onBeforeMount(() => {
@@ -256,6 +284,8 @@ onBeforeUnmount(() => {
       v-model:bpm="bpm"
       v-model:denominator="denominator"
       v-model:numerator="numerator"
+      v-model:my-key="key"
+      v-model:scale="scale"
       @change-time-signature="handleChangeTimeSignature"
     />
     <div>
@@ -289,9 +319,28 @@ onBeforeUnmount(() => {
         @clear="clearSequence"
       />
       <div>
+        Bars: {{ bars }} |
+        <span class="me-2">Duration: {{ duration }}</span>
+
         <button
           type="button"
           class="btn btn-primary"
+          @click="transpose(1)"
+        >
+          +1hs
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-primary ms-1"
+          @click="transpose(-1)"
+        >
+          -1hs
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-primary ms-1"
           @click="addBar"
         >
           Add bar
@@ -316,9 +365,11 @@ onBeforeUnmount(() => {
 
     <chord-accordion
       :chords="chords"
-      @click="stageChord($event)"
-      @mouseover="stagedChord = $event"
-      @mouseout="showChord"
+      :my-key="key"
+      :scale="scale"
+      @clicked="stageChord($event)"
+      @hovered="stagedChord = $event"
+      @quit="showChord"
     />
   </div>
 </template>

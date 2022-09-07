@@ -18,7 +18,7 @@ const defaultDuration = .3; // 300ms
 
 export const setBpm = bpm => Tone.Transport.bpm.value = bpm;
 
-export const playNotes = (notes, duration = defaultDuration, time = 0, arpeggio = 0) => {
+export const playNotes = (notes, duration = defaultDuration, time = 0, arpeggio = 0, raise = true) => {
   const now = Tone.now();
   let prevNoteLetter = null;
   let octave = 4;
@@ -30,8 +30,9 @@ export const playNotes = (notes, duration = defaultDuration, time = 0, arpeggio 
       prevNoteLetter &&
       hierarchy.indexOf(prevNoteLetter) > hierarchy.indexOf(noteLetter)
     ) {
-      octave++;
+      if (raise) octave++;
     }
+    if (i === 0) finalNotes.push(`${noteAlias}${octave - 1}`)
     finalNotes.push(`${noteAlias}${octave}`)
     prevNoteLetter = noteLetter
   }
@@ -59,13 +60,12 @@ export const scheduleChords = (chords, offset, bars, numerator, denominator, cal
   const durationScale = getDurationScale(denominator);
 
   const part = new Tone.Sequence(((time, value) => {
-    playNotes(value.notes, durationScale * (value.duration || 0), time);
+    playNotes(value.notes, durationScale * (value.duration || 0), time, 0, false);
     Tone.Draw.schedule(() => callback(value), time);
-  }), chords, denominator).start(0);
+  }), chords, denominator).start(0).loop = true;
 
   // This will enable playback if it is not first triggered by an attackRelease
   Tone.context.resume();
-
   Tone.Transport.start();
 }
 
