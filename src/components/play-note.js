@@ -1,7 +1,6 @@
 import * as Tone  from 'tone';
-import { keyIndex } from './consts.ts';
+import { generateChordWithOctaves} from './helper-functions';
 
-const hierarchy = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 const synth = new Tone.Sampler({
   urls: {
     C4: "C4.mp3",
@@ -20,22 +19,7 @@ export const setBpm = bpm => Tone.Transport.bpm.value = bpm;
 
 export const playNotes = (notes, duration = defaultDuration, time = 0, arpeggio = 0, raise = true) => {
   const now = Tone.now();
-  let prevNoteLetter = null;
-  let octave = 4;
-  const finalNotes = [];
-  for(let i = 0; i < notes.length; i++) {
-    const noteAlias = keyIndex.find(record => record.includes(notes[i]))[0];
-    const noteLetter = noteAlias.charAt(0);
-    if (
-      prevNoteLetter &&
-      hierarchy.indexOf(prevNoteLetter) > hierarchy.indexOf(noteLetter)
-    ) {
-      if (raise) octave++;
-    }
-    if (i === 0) finalNotes.push(`${noteAlias}${octave - 1}`)
-    finalNotes.push(`${noteAlias}${octave}`)
-    prevNoteLetter = noteLetter
-  }
+  const finalNotes = generateChordWithOctaves(notes)
 
   if (arpeggio !== 0) {
     for (let i = 0; i < finalNotes.length; i++) {

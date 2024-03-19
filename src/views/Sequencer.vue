@@ -12,6 +12,8 @@ import Instrument from '@/components/Instrument.vue';
 import { addSixthChords } from '@/components/helper-functions';
 import { states } from '@/components/chord-grid-states';
 import { denominatorMap, shorthandMap } from '@/components/consts.ts';
+import MidiWriter from 'midi-writer-js'
+import { generateChordWithOctaves } from '@/components/helper-functions'
 
 // Static variables
 
@@ -23,6 +25,7 @@ const defaultBars = 12;
 const defaultNumerator = 4;
 const defaultDenominator = 4;
 const notesOrder = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+const quarterBeatTicks = 128;
 
 // Refs
 
@@ -45,7 +48,7 @@ const scale = ref('major');
 const barLength = computed(() => {
   let unit = cellSize;
 
-  if (denominator.value === 1){
+  if (denominator.value === 1) {
     unit = cellSize * 4
   }
 
@@ -105,7 +108,7 @@ const playSequence = (loop = false, record = false) => {
       // Find the distance to the next chord
       const nextIndex = subset.findIndex(record => record);
       // If we did not find a next chord, let it sound out till the end of the sequence
-      const duration = nextIndex === -1 ? subset.length + 1: nextIndex + 1;
+      const duration = nextIndex === -1 ? subset.length + 1 : nextIndex + 1;
       chordSequence.push({
         notes: value?.value || [],
         duration,
@@ -181,7 +184,7 @@ const removeBar = () => {
 const handleKeyInput = e => {
   // console.log(e);
   const base = numerator.value * bars.value;
-  switch(e.key) {
+  switch (e.key) {
     case 'ArrowUp':
       e.preventDefault();
       cursor.value = (base + cursor.value - numerator.value * barsPerRow.value) % base;
@@ -214,15 +217,62 @@ const handleKeyInput = e => {
   }
 }
 
-const handleSaveFile = () => {
-    const filename = prompt('Enter filename');
-    if (!filename) return;
-    FileHandler.downloadJsonFile(filename, {
-      numerator: numerator.value,
-      denominator: denominator.value,
-      bpm: bpm.value,
-      stagedChords: stagedChords.value
-    })
+const handleSaveAsJsonFile = () => {
+  const filename = prompt('Enter filename');
+  if (!filename) return;
+  FileHandler.downloadJsonFile(filename, {
+    numerator: numerator.value,
+    denominator: denominator.value,
+    bpm: bpm.value,
+    stagedChords: stagedChords.value
+  })
+}
+
+const handleSaveAsMidiFile = () => {
+  const filename = prompt('Enter filename');
+  if (!filename) return;
+
+  const unitDuration = (4 * quarterBeatTicks) / denominator.value
+  const track = new MidiWriter.Track();
+
+  track.setTempo(bpm.value);
+
+  let i = 0;
+  let leadTicks = 0
+  // Find a first note, which might not be on index 0
+  while (stagedChords.value[i] === null && i < stagedChords.value.length) {
+    i++
+  }
+
+  leadTicks = i * quarterBeatTicks
+
+  while (i < stagedChords.value.length) {
+    // Do we have a chord?
+    if (stagedChords.value[i] !== null) {
+      // Then calculate the distance to the next note.
+      let j = i + 1;
+      while (stagedChords.value[j] === null && j < stagedChords.value.length) {
+        j++
+      }
+
+      track.addEvent(new MidiWriter.NoteEvent({
+        pitch: generateChordWithOctaves(stagedChords.value[i].value),
+        duration: `T${(j - i) * unitDuration}`,
+        ...(leadTicks ? { ticks: leadTicks } : {})
+      }));
+
+      leadTicks = null
+
+      i = j;
+    } else {
+      i++;
+    }
+  }
+
+  const write = new MidiWriter.Writer(track);
+
+  // Passing buffer to the function
+  FileHandler.downloadMidiFile(filename, write.buildFile())
 }
 
 const handleLoadFile = () => {
@@ -280,96 +330,49 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="container d-flex mb-2 justify-content-between">
-    <main-controls
-      v-model:bpm="bpm"
-      v-model:denominator="denominator"
-      v-model:numerator="numerator"
-      v-model:my-key="key"
-      v-model:scale="scale"
-      @change-time-signature="handleChangeTimeSignature"
-    />
+    <main-controls v-model:bpm="bpm" v-model:denominator="denominator" v-model:numerator="numerator"
+      v-model:my-key="key" v-model:scale="scale" @change-time-signature="handleChangeTimeSignature" />
     <div>
-      <button class="btn btn-primary" type="button" @click="handleSaveFile">Save file</button>
+      <button class="btn btn-primary" type="button" @click="handleSaveAsJsonFile">Save .json</button>
+      <button class="btn btn-primary ms-2" type="button" @click="handleSaveAsMidiFile">Save .midi</button>
       <button class="btn btn-primary ms-2" type="button" @click="handleLoadFile">Load file</button>
-      <input type="file" class="d-none" ref="fileInput" @change="loadFile($event)"/>
+      <input type="file" class="d-none" ref="fileInput" @change="loadFile($event)" />
     </div>
   </div>
 
-  <chord-grid
-    :recording="recording"
-    :state="state"
-    :computed-width="computedWidth"
-    :staged-chords="stagedChords"
-    :denominator="denominator"
-    :numerator="numerator"
-    :cursor="cursor"
-    @set-cursor="handleSetCursor"
-  />
+  <chord-grid :recording="recording" :state="state" :computed-width="computedWidth" :staged-chords="stagedChords"
+    :denominator="denominator" :numerator="numerator" :cursor="cursor" @set-cursor="handleSetCursor" />
 
   <div class="container">
     <div class="d-flex justify-content-between">
-      <playback-controls
-        :state="state"
-        @play="playSequence(false, false)"
-        @pause="pauseSequence"
-        @stop="stopSequence"
-        @loop="playSequence(true, false)"
-        @rewind="cursor = 0"
-        @record="recordSequence"
-        @clear="clearSequence"
-      />
+      <playback-controls :state="state" @play="playSequence(false, false)" @pause="pauseSequence" @stop="stopSequence"
+        @loop="playSequence(true, false)" @rewind="cursor = 0" @record="recordSequence" @clear="clearSequence" />
       <div>
         Bars: {{ bars }} |
         <span class="me-2">Duration: {{ duration }}</span>
 
-        <button
-          type="button"
-          class="btn btn-primary"
-          @click="transpose(1)"
-        >
+        <button type="button" class="btn btn-primary" @click="transpose(1)">
           +1hs
         </button>
 
-        <button
-          type="button"
-          class="btn btn-primary ms-1"
-          @click="transpose(-1)"
-        >
+        <button type="button" class="btn btn-primary ms-1" @click="transpose(-1)">
           -1hs
         </button>
 
-        <button
-          type="button"
-          class="btn btn-primary ms-1"
-          @click="addBar"
-        >
+        <button type="button" class="btn btn-primary ms-1" @click="addBar">
           Add bar
         </button>
 
-        <button
-          type="button"
-          class="btn btn-primary ms-1"
-          @click="removeBar"
-          :disabled="numerator >= stagedChords.length - 1"
-        >
+        <button type="button" class="btn btn-primary ms-1" @click="removeBar"
+          :disabled="numerator >= stagedChords.length - 1">
           Remove bar
         </button>
       </div>
     </div>
 
-    <instrument
-      :scale="stagedChord"
-      :chord="[]"
-      :show-options="false"
-    />
+    <instrument :scale="stagedChord" :chord="[]" :show-options="false" />
 
-    <chord-accordion
-      :chords="chords"
-      :my-key="key"
-      :scale="scale"
-      @clicked="stageChord($event)"
-      @hovered="stagedChord = $event"
-      @quit="showChord"
-    />
+    <chord-accordion :chords="chords" :my-key="key" :scale="scale" @clicked="stageChord($event)"
+      @hovered="stagedChord = $event" @quit="showChord" />
   </div>
 </template>

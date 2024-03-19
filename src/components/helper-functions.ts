@@ -1,3 +1,7 @@
+import { keyIndex } from './consts';
+
+const hierarchy = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
 export const generateDrawTextFn = (textOffsetX, textOffsetY, stepWidth, stepHeight) =>
   (ctx, note, i, j, color = 'white') => {
     ctx.save();
@@ -32,3 +36,24 @@ export const addSixthChords = chords => ({
     [value[1]]: [...value.slice(1), ...value.slice(0, 1)]
   }), {})
 })
+
+export const generateChordWithOctaves = (notes, raise = true) => {
+  let prevNoteLetter = '';
+  let octave = 4;
+  const finalNotes = [];
+  for(let i = 0; i < notes.length; i++) {
+    const noteAlias = keyIndex.find(record => record.includes(notes[i]))[0];
+    const noteLetter = noteAlias.charAt(0);
+    if (
+      prevNoteLetter &&
+      hierarchy.indexOf(prevNoteLetter) > hierarchy.indexOf(noteLetter)
+    ) {
+      if (raise) octave++;
+    }
+    if (i === 0) finalNotes.push(`${noteAlias}${octave - 1}`)
+    finalNotes.push(`${noteAlias}${octave}`)
+    prevNoteLetter = noteLetter
+  }
+
+  return finalNotes
+}
